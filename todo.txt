@@ -1,0 +1,3 @@
+[] testar aplicação para verificar se existem erros
+[] 'HOME' - trocar input por react-native-picker-select e listar as cidades e estados através da API 
+
