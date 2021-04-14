@@ -1,16 +1,50 @@
-import React, { useState } from 'react';
-import { View, ImageBackground, Text, Image, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, ReactText } from 'react';
+import { View, ImageBackground, Text, Image, StyleSheet, TextStyle, KeyboardAvoidingView, Platform } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { RectButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+import api from '../../services/api';
+
+interface IBGE_UF_Response {
+    id: number
+    sigla: string
+    nome: string
+}
+interface IBGE_City_Response {
+    nome: string
+}
 
 const Home: React.FC = () => {
 
     const navigation = useNavigation()
 
-    const [city, setCity] = useState('');
-    const [UF, setUF] = useState('');
+    const [cities, setCities] = useState<string[]>([])
+    const [selectedCity, setSelectedCity] = useState<ReactText>('0');
+    const [ufs, setUfs] = useState<string[]>([])
+    const [selectedUf, setSelectedUf] = useState<ReactText>('0')
     const [keybordAvoidingView, setKeybordAvoidingView] = useState(false);
+
+    // listando as UF da API
+    useEffect(() => {
+        api.get<IBGE_UF_Response[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+            .then(response => {
+                const ufInitials = response.data.map(uf => uf.sigla)
+                setUfs(ufInitials)
+            })
+    }, [])
+
+    // carregar as cidades sempre que a UF mudar 
+    useEffect(() => {
+        if (selectedUf === '0') {
+            return
+        }
+        api.get<IBGE_City_Response[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf.toLowerCase()}/municipios`)
+            .then(response => {
+                const cityNames = response.data.map(city => city.nome)
+                setCities(cityNames)
+            })
+    }, [selectedUf])
 
     /**
      * Esta função será chamada sempre que o usuário pressionar nos campos de texto
@@ -20,10 +54,21 @@ const Home: React.FC = () => {
         setKeybordAvoidingView(true)
     }
 
+    function handleSelectUf(itemValue: ReactText) {
+        let uf = itemValue
+        setSelectedUf(uf)
+        console.log('selectedUf :>> ', selectedUf);
+    }
+
+    function handleSelectCity(itemValue: ReactText) {
+        let city = itemValue
+        setSelectedCity(city)
+    }
+
     function handleNavigateToPoints() {
         navigation.navigate('Points', {
-            city,
-            UF
+            selectedCity,
+            selectedUf
         })
         setKeybordAvoidingView(false)
     }
@@ -46,25 +91,44 @@ const Home: React.FC = () => {
                         </View>
                     }
                 </View>
-                <View style={styles.footer}>
-                    <TextInput style={styles.input}
-                        onFocus={() => handleKeybordAvoidingView()}
-                        onChangeText={setUF}
-                        placeholder='Digite a UF'
-                        autoCapitalize='characters'
-                        autoCorrect={false}
-                        maxLength={2}
-                    />
-                    
-                    <TextInput
+                <View style={styles.select}>
+
+                    <Picker
                         style={styles.input}
-                        onFocus={() => handleKeybordAvoidingView()}
-                        value={city}
-                        onChangeText={setCity}
-                        placeholder='Digite a cidade'
-                        autoCorrect={false}
-                    />
-                    <RectButton style={styles.button} onPress={handleNavigateToPoints}>
+                        selectedValue={selectedUf}
+                        onValueChange={(itemValue: ReactText, itemIndex) =>
+                            handleSelectUf(itemValue)
+                        }
+                        mode='dropdown'
+                    >
+                        {ufs.map(uf => (
+                            <Picker.Item
+                                key={uf}
+                                label={uf}
+                                value={uf}
+                            />
+                        ))}
+                    </Picker>
+
+                    <Picker
+                        style={styles.input}
+                        selectedValue={selectedCity}
+                        onValueChange={(itemValue: ReactText, itemIndex) =>
+                            handleSelectCity(itemValue)
+                        }
+                        mode='dropdown'
+                    >
+                        {cities.map(city => (
+                            <Picker.Item
+                                key={city}
+                                label={city}
+                                value={city}
+                            />
+                        ))}
+                    </Picker>
+
+                    <RectButton style={styles.button}
+                        onPress={handleNavigateToPoints}>
                         <View style={styles.buttonIcon}>
                             <Icon name='arrow-right' color='#fff' size={24} />
                         </View>
@@ -119,7 +183,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 8,
         paddingHorizontal: 24,
-        fontSize: 16,
+        fontSize: 16
     },
 
     button: {
