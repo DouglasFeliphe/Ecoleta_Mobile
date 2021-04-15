@@ -51,9 +51,12 @@ const Points: React.FC = () => {
                 return
             }
 
-            const location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true })
+            // const location = await Location.getCurrentPositionAsync()
+            const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
 
             const { latitude, longitude } = location.coords
+
+            setInitialPosition([latitude, longitude]);
         }
 
         loadPosition()
@@ -63,6 +66,7 @@ const Points: React.FC = () => {
     useEffect(() => {
         api.get('items').then(response => {
             setItems(response.data)
+            console.log('response.data :>> ', response.data);
         })
     }, []);
 
@@ -76,7 +80,7 @@ const Points: React.FC = () => {
                 items: selectedItems
             }
         }).then(response => {
-            setPoints(response.data)            
+            setPoints(response.data)
         })
     }, [selectedItems]);
 

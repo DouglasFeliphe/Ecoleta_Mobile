@@ -1,3 +1,5 @@
-[] testar aplicação para verificar se existem erros
-[] 'HOME' - trocar input por react-native-picker-select e listar as cidades e estados através da API 
+[x] erro ao inicializar aplicação: the following apis have moved to separate package
+[x] erro ao renderizar o mapa: location provider is unavaliable
+[x] 'HOME' - trocar input por react-native-picker-select e listar as cidades e estados através da API 
+[ ] testar aplicação para verificar se existem erros
 

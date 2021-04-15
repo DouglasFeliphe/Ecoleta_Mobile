@@ -39,7 +39,7 @@ const Home: React.FC = () => {
         if (selectedUf === '0') {
             return
         }
-        api.get<IBGE_City_Response[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf.toLowerCase()}/municipios`)
+        api.get<IBGE_City_Response[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
             .then(response => {
                 const cityNames = response.data.map(city => city.nome)
                 setCities(cityNames)
@@ -57,7 +57,7 @@ const Home: React.FC = () => {
     function handleSelectUf(itemValue: ReactText) {
         let uf = itemValue
         setSelectedUf(uf)
-        console.log('selectedUf :>> ', selectedUf);
+
     }
 
     function handleSelectCity(itemValue: ReactText) {
@@ -70,6 +70,7 @@ const Home: React.FC = () => {
             selectedCity,
             selectedUf
         })
+        console.log('selectedUf :>> ', selectedUf);
         setKeybordAvoidingView(false)
     }
 
